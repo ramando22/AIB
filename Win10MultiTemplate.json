@@ -1,0 +1,84 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "imageTemplateName": {
+        "type": "string"
+      },
+      "api-version": {
+        "type": "string"
+      },
+      "svclocation": {
+        "type": "string"
+      }
+    },
+    "variables": {},
+    "resources": [
+      {
+        "name": "[parameters('imageTemplateName')]",
+        "type": "Microsoft.VirtualMachineImages/imageTemplates",
+        "apiVersion": "[parameters('api-version')]",
+        "location": "[parameters('svclocation')]",
+        "dependsOn": [],
+        "tags": {
+          "imagebuilderTemplate": "win10multi",
+          "userIdentity": "enabled"
+        },
+        "identity": {
+          "type": "UserAssigned",
+          "userAssignedIdentities": {
+            "/subscriptions/21ec3b96-fb42-47b2-9b35-3b76d90eb84c/resourcegroups/AIB/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ImageBuilder": {}
+          }
+        },
+        "properties": {
+          "buildTimeoutInMinutes": 60,
+          "vmProfile": {
+            "vmSize": "Standard_D2_v2",
+            "osDiskSizeGB": 127
+          },
+          "source": {
+            "type": "PlatformImage",
+            "publisher": "MicrosoftWindowsDesktop",
+            "offer": "Windows-10",
+            "sku": "20h1-evd",
+            "version": "latest"
+          },
+          "customize": [
+            {
+              "type": "PowerShell",
+              "name": "GetAzCopy",
+              "inline": [
+                "New-Item -Type Directory -Path 'c:\\' -Name temp",
+                "invoke-webrequest -uri 'https://aka.ms/downloadazcopy-v10-windows' -OutFile 'c:\\temp\\azcopy.zip'",
+                "Expand-Archive 'c:\\temp\\azcopy.zip' 'c:\\temp'",
+                "copy-item 'C:\\temp\\azcopy_windows_amd64_*\\azcopy.exe\\' -Destination 'c:\\temp'"
+              ]
+            }
+          ],
+            "distribute": 
+            [
+                {   
+                    "type": "SharedImage",
+                    "galleryImageId": "/subscriptions/21ec3b96-fb42-47b2-9b35-3b76d90eb84c/resourceGroups/AIB/providers/Microsoft.Compute/galleries/AIBGallery/images/win10avd",
+                    "runOutputName": "sigOutput",
+                    "artifactTags": {
+                        "source": "wvd10",
+                        "baseosimg": "windows10"
+                    },
+                    "replicationRegions": [
+
+                    ]
+                }
+            ]
+            }
+        }
+
+    
+    ]
+}  
+  
+
+
+
+
+
