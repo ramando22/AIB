@@ -54,6 +54,22 @@ catch {
 }
 #endregion
 
+#region Firefox
+try {
+    Start-Process -filepath 'c:\temp\Firefox Setup 98.0.exe' /S
+    if (Test-Path "C:\Program Files\Mozilla Firefox\firefox.exe") {
+        Write-Log "Firefox has been installed"
+    }
+    else {
+        write-log "Error locating the Firefox"
+    }
+}
+catch {
+    $ErrorMessage = $_.Exception.message
+    write-log "Error installing Firefox: $ErrorMessage"
+}
+#endregion
+
 #region Sysprep Fix
 # Fix for first login delays due to Windows Module Installer
 try {
